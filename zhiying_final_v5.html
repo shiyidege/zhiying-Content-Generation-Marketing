@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>智影文创 · 智能营销内容平台（热点版）</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0d0d0d;
+    --paper: #f5f0e8;
+    --paper2: #ede7d8;
+    --gold: #c8a84b;
+    --gold2: #e8c96a;
+    --red: #c0392b;
+    --muted: #7a7060;
+    --border: #d4c9b0;
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Noto Sans SC', sans-serif; background: var(--paper); color: var(--ink); min-height: 100vh; overflow-x: hidden; }
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background-image: repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(0,0,0,.03) 40px),repeating-linear-gradient(90deg,transparent,transparent 39px,rgba(0,0,0,.02) 40px);
+    pointer-events: none; z-index: 0;
+  }
+  .topbar { height: 4px; background: linear-gradient(90deg,var(--red),var(--gold),var(--gold2),var(--gold)); }
+  header { position:relative;z-index:1;padding:28px 48px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between; }
+  .logo { display:flex;align-items:center;gap:14px; }
+  .logo-seal { width:48px;height:48px;background:var(--red);border-radius:4px;display:flex;align-items:center;justify-content:center;transform:rotate(-3deg);box-shadow:2px 2px 0 rgba(0,0,0,.2);flex-shrink:0; }
+  .logo-seal span { font-family:'Noto Serif SC',serif;font-size:19px;font-weight:700;color:#fff;transform:rotate(3deg);display:block; }
+  .logo-text h1 { font-family:'Noto Serif SC',serif;font-size:22px;font-weight:700;letter-spacing:2px; }
+  .logo-text p { font-size:11px;color:var(--muted);letter-spacing:3px;margin-top:2px; }
+  .header-badge { display:flex;gap:8px; }
+  .badge { padding:4px 10px;background:var(--paper2);border:1px solid var(--border);border-radius:20px;font-size:11px;color:var(--muted);letter-spacing:1px; }
+  .badge.active { background:var(--gold);color:var(--ink);border-color:var(--gold);font-weight:500; }
+
+  main { position:relative;z-index:1;max-width:960px;margin:0 auto;padding:40px 24px 80px; }
+
+  /* Hero */
+  .hero { text-align:center;margin-bottom:40px; }
+  .hero-tag { display:inline-block;padding:4px 16px;border:1px solid var(--gold);color:var(--gold);font-size:11px;letter-spacing:4px;margin-bottom:16px;border-radius:2px; }
+  .hero h2 { font-family:'Noto Serif SC',serif;font-size:32px;font-weight:700;line-height:1.4;margin-bottom:10px; }
+  .hero h2 em { font-style:normal;color:var(--red); }
+  .hero p { color:var(--muted);font-size:14px;letter-spacing:1px;line-height:1.8; }
+
+  /* 输入卡片 */
+  .card { background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:32px;box-shadow:0 2px 20px rgba(0,0,0,.06); }
+  .mode-label { font-size:11px;letter-spacing:3px;color:var(--muted);margin-bottom:12px;font-weight:500; }
+  .mode-tabs { display:flex;gap:8px;margin-bottom:24px; }
+  .mode-tab { flex:1;padding:12px 8px;border:1.5px solid var(--border);border-radius:10px;background:var(--paper);cursor:pointer;text-align:center;transition:all .2s;position:relative;overflow:hidden; }
+  .mode-tab:hover { border-color:var(--gold);background:#fdf8ee; }
+  .mode-tab.selected { border-color:var(--gold);background:linear-gradient(135deg,#fffbf0,#fdf3d0);box-shadow:0 2px 12px rgba(200,168,75,.2); }
+  .mode-tab.selected::after { content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--gold);border-radius:10px 10px 0 0; }
+  .mode-tab .tab-icon { font-size:24px;margin-bottom:6px;display:block;line-height:1; }
+  .mode-tab .tab-name { font-size:13px;font-weight:500;color:var(--ink);display:block;margin-bottom:2px; }
+  .mode-tab .tab-desc { font-size:10px;color:var(--muted); }
+
+  /* 热点区域样式 */
+  .hotspot-section { margin: 16px 0 24px; display: none; }
+  .hotspot-section.show { display: block; }
+  .hotspot-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .hotspot-title { font-size: 11px; letter-spacing: 3px; color: var(--muted); font-weight: 500; }
+  .refresh-hotspot { font-size: 10px; color: var(--gold); cursor: pointer; padding: 4px 8px; border: 1px solid var(--gold); border-radius: 4px; }
+  .hotspot-list { max-height: 200px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; padding: 8px; background: var(--paper); }
+  .hotspot-item { padding: 8px 12px; border-radius: 6px; cursor: pointer; margin-bottom: 4px; font-size: 12px; display: flex; align-items: center; }
+  .hotspot-item:hover { background: #fdf8ee; }
+  .hotspot-item.selected { background: var(--gold2); border: 1px solid var(--gold); }
+  .hotspot-rank { color: var(--red); font-weight: 600; margin-right: 8px; width: 20px; text-align: center; }
+  .hotspot-time { font-size: 10px; color: var(--muted); margin-left: 8px; }
+
+  .input-label { font-size:11px;letter-spacing:3px;color:var(--muted);margin-bottom:8px;font-weight:500; }
+  textarea { width:100%;padding:14px 16px;border:1.5px solid var(--border);border-radius:10px;background:var(--paper);font-family:'Noto Sans SC',sans-serif;font-size:14px;color:var(--ink);line-height:1.8;resize:vertical;min-height:100px;transition:border-color .2s;outline:none; }
+  textarea:focus { border-color:var(--gold);background:#fffcf4; }
+  textarea::placeholder { color:#b0a890; }
+
+  .options-row { display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 18px; }
+  .option-chip { padding:5px 12px;border:1px solid var(--border);border-radius:20px;font-size:12px;color:var(--muted);cursor:pointer;transition:all .15s;background:var(--paper); }
+  .option-chip:hover,.option-chip.active { border-color:var(--gold);color:#8a6a10;background:#fdf8ee; }
+
+  .generate-btn { width:100%;padding:15px;background:var(--ink);color:#fff;border:none;border-radius:10px;font-family:'Noto Serif SC',serif;font-size:15px;font-weight:600;letter-spacing:3px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden; }
+  .generate-btn::before { content:'';position:absolute;inset:0;background:linear-gradient(135deg,transparent 40%,rgba(200,168,75,.15));pointer-events:none; }
+  .generate-btn:hover { background:#222;transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,0,0,.2); }
+  .generate-btn:disabled { background:#999;cursor:not-allowed;transform:none;box-shadow:none; }
+
+  /* 步骤进度 */
+  .steps-bar { display:none;margin:20px 0 0;padding:16px 20px;background:var(--paper);border:1px solid var(--border);border-radius:10px; }
+  .steps-bar.show { display:block; }
+  .steps-track { display:flex;align-items:center;gap:0;margin-bottom:10px; }
+  .step-item { display:flex;flex-direction:column;align-items:center;flex:1;position:relative; }
+  .step-item:not(:last-child)::after { content:'';position:absolute;top:14px;left:50%;width:100%;height:2px;background:var(--border);z-index:0; }
+  .step-item.done:not(:last-child)::after { background:var(--gold); }
+  .step-dot { width:28px;height:28px;border-radius:50%;border:2px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;z-index:1;position:relative;transition:all .3s;color:var(--muted); }
+  .step-item.active .step-dot { border-color:var(--gold);background:var(--gold);color:#fff;animation:pulse .8s ease infinite; }
+  .step-item.done .step-dot { border-color:var(--gold);background:var(--gold);color:#fff; }
+  .step-item.error .step-dot { border-color:var(--red);background:var(--red);color:#fff; }
+  @keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(200,168,75,.4)} 50%{box-shadow:0 0 0 6px rgba(200,168,75,0)} }
+  .step-label { font-size:10px;color:var(--muted);margin-top:6px;letter-spacing:1px;text-align:center; }
+  .step-item.active .step-label { color:var(--gold);font-weight:500; }
+  .step-item.done .step-label { color:var(--gold); }
+  .step-status { font-size:12px;color:var(--muted);text-align:center;letter-spacing:1px;min-height:18px; }
+
+  /* loading bar */
+  .loading-bar { display:none;height:3px;background:var(--paper2);border-radius:3px;margin:12px 0;overflow:hidden; }
+  .loading-bar.show { display:block; }
+  .loading-bar::after { content:'';display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--red),var(--gold));background-size:200%;animation:ldbar 1.4s ease infinite; }
+  @keyframes ldbar { 0%{background-position:200% 0;width:30%;margin-left:0} 50%{background-position:0% 0;width:60%;margin-left:20%} 100%{background-position:-200% 0;width:30%;margin-left:100%} }
+
+  .error-box { background:#fff5f5;border:1px solid #fcc;border-radius:10px;padding:14px 18px;font-size:13px;color:var(--red);display:none;margin-top:12px; }
+  .error-box.show { display:block; }
+
+  /* ── 结果区多页 ── */
+  .result-section { display:none;margin-top:28px;animation:fadeUp .4s ease; }
+  .result-section.show { display:block; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+
+  /* 结果页 tab 导航 */
+  .result-nav { display:flex;gap:0;border-bottom:1.5px solid var(--border);margin-bottom:20px; }
+  .result-tab { padding:10px 20px;font-size:13px;color:var(--muted);cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-1.5px;transition:all .15s;letter-spacing:1px;white-space:nowrap; }
+  .result-tab:hover { color:var(--ink); }
+  .result-tab.active { color:var(--ink);border-bottom-color:var(--gold);font-weight:500; }
+  .result-tab .tab-badge { display:inline-block;background:var(--gold);color:var(--ink);font-size:10px;padding:1px 6px;border-radius:10px;margin-left:4px;vertical-align:middle; }
+  .result-tab .tab-badge.pending { background:var(--paper2);color:var(--muted); }
+
+  /* 结果页面 */
+  .result-page { display:none; }
+  .result-page.active { display:block; }
+
+  /* 文案页 */
+  .text-result { background:var(--paper);border:1px solid var(--border);border-radius:10px;padding:24px 28px;font-size:14px;line-height:2;color:var(--ink);white-space:pre-wrap;font-family:'Noto Serif SC',serif;min-height:120px; }
+
+  /* 媒体页：文案 + 媒体并排 */
+  .media-layout { display:grid;grid-template-columns:1fr 1fr;gap:20px; }
+  @media(max-width:680px){ .media-layout{grid-template-columns:1fr;} }
+  .media-panel { background:var(--paper);border:1px solid var(--border);border-radius:10px;overflow:hidden; }
+  .media-panel-header { padding:10px 16px;border-bottom:1px solid var(--border);font-size:11px;letter-spacing:2px;color:var(--muted);font-weight:500;display:flex;align-items:center;gap:8px; }
+  .media-panel-header .dot { width:6px;height:6px;border-radius:50%;background:var(--gold); }
+  .media-panel-body { padding:16px; }
+  .media-panel-body .text-result { min-height:80px;padding:14px 16px;font-size:13px; }
+
+  /* 图片 */
+  .image-result { border-radius:8px;overflow:hidden;background:var(--paper2);min-height:200px;display:flex;align-items:center;justify-content:center; }
+  .image-result img { width:100%;display:block;border-radius:8px; }
+
+  /* 视频 */
+  .video-result { border-radius:8px;overflow:hidden;background:#111;min-height:200px;display:flex;align-items:center;justify-content:center; }
+  .video-result video { width:100%;display:block; }
+
+  /* 占位 */
+  .placeholder-box { min-height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--muted); }
+  .placeholder-box .ph-icon { font-size:36px;opacity:.4; }
+  .placeholder-box .ph-text { font-size:12px;letter-spacing:1px; }
+  .placeholder-box.loading .ph-icon { animation:spin 1.5s linear infinite; }
+  @keyframes spin { to{transform:rotate(360deg)} }
+
+  /* 操作按钮行 */
+  .result-actions-row { display:flex;gap:8px;margin-top:14px;flex-wrap:wrap; }
+  .action-btn { padding:6px 14px;border:1px solid var(--border);border-radius:6px;background:#fff;font-size:12px;color:var(--muted);cursor:pointer;transition:all .15s;font-family:'Noto Sans SC',sans-serif; }
+  .action-btn:hover { border-color:var(--gold);color:var(--ink); }
+  .action-btn.primary { background:var(--gold);color:var(--ink);border-color:var(--gold);font-weight:500; }
+  .action-btn.primary:hover { background:var(--gold2); }
+
+  /* 历史 */
+  .history-section { margin-top:36px; }
+  .section-divider { display:flex;align-items:center;gap:16px;margin-bottom:16px; }
+  .section-divider span { font-size:11px;letter-spacing:3px;color:var(--muted);white-space:nowrap; }
+  .section-divider::before,.section-divider::after { content:'';flex:1;height:1px;background:var(--border); }
+  .history-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px; }
+  .history-item { background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px;cursor:pointer;transition:all .2s; }
+  .history-item:hover { border-color:var(--gold);box-shadow:0 2px 12px rgba(200,168,75,.15); }
+  .history-item .h-type { font-size:10px;letter-spacing:2px;color:var(--gold);margin-bottom:6px;font-weight:500; }
+  .history-item .h-prompt { font-size:12px;color:var(--muted);line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical; }
+  .history-item .h-time { font-size:10px;color:#ccc;margin-top:8px; }
+
+  footer { position:relative;z-index:1;text-align:center;padding:20px;border-top:1px solid var(--border);font-size:11px;color:var(--muted);letter-spacing:2px; }
+  .deco { position:fixed;pointer-events:none;z-index:0;opacity:.04;font-family:'Noto Serif SC',serif;font-size:200px;font-weight:700;color:var(--ink);user-select:none; }
+  .deco-1 { bottom:-40px;right:-20px; }
+  .deco-2 { top:80px;left:-30px;font-size:160px; }
+
+  /* ── 自动分发模块 ── */
+  .distribute-panel {
+    display: none;
+    margin-top: 20px;
+    border: 1.5px solid var(--gold);
+    border-radius: var(--radius);
+    background: linear-gradient(135deg, #fffbf0, #fdf3d0);
+    overflow: hidden;
+    animation: fadeUp .35s ease;
+  }
+  .distribute-panel.show { display: block; }
+  .distribute-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 20px;
+    background: linear-gradient(90deg, var(--ink), #2a2010);
+    color: #fff;
+  }
+  .distribute-header-left { display: flex; align-items: center; gap: 10px; }
+  .distribute-header-icon { font-size: 18px; }
+  .distribute-header-text h3 { font-family: 'Noto Serif SC', serif; font-size: 14px; font-weight: 700; letter-spacing: 2px; margin-bottom: 2px; }
+  .distribute-header-text p { font-size: 10px; color: rgba(255,255,255,.55); letter-spacing: 1px; }
+  .distribute-close { cursor: pointer; font-size: 18px; opacity: .6; transition: opacity .2s; padding: 4px; line-height: 1; }
+  .distribute-close:hover { opacity: 1; }
+  .distribute-body { padding: 20px; }
+  .distribute-preview {
+    display: flex; gap: 14px; margin-bottom: 18px;
+    padding: 14px; background: #fff; border-radius: 10px; border: 1px solid var(--border);
+  }
+  .distribute-preview-media { width: 72px; height: 72px; border-radius: 8px; background: var(--paper2); flex-shrink: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+  .distribute-preview-media img, .distribute-preview-media video { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
+  .distribute-preview-media .media-icon { font-size: 28px; opacity: .4; }
+  .distribute-preview-info { flex: 1; min-width: 0; }
+  .distribute-preview-info .pi-label { font-size: 10px; letter-spacing: 2px; color: var(--gold); font-weight: 500; margin-bottom: 5px; }
+  .distribute-preview-info .pi-text { font-size: 12px; color: var(--ink); line-height: 1.6; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
+  .platform-list { display: flex; flex-direction: column; gap: 10px; }
+  .platform-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 16px;
+    background: #fff; border: 1px solid var(--border); border-radius: 10px;
+    transition: all .2s;
+  }
+  .platform-row:hover { border-color: var(--gold); box-shadow: 0 2px 10px rgba(200,168,75,.15); }
+  .platform-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+  .platform-icon.xhs { background: linear-gradient(135deg, #ff2442, #ff6b7a); }
+  .platform-icon.dy { background: linear-gradient(135deg, #010101, #161823); }
+  .platform-info { flex: 1; }
+  .platform-info .pn { font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 2px; }
+  .platform-info .pd { font-size: 11px; color: var(--muted); letter-spacing: .5px; }
+  .platform-status { font-size: 11px; padding: 3px 10px; border-radius: 20px; margin-right: 4px; }
+  .platform-status.ready { background: #e8f5e9; color: #388e3c; }
+  .platform-status.na { background: var(--paper2); color: var(--muted); }
+  .publish-btn {
+    padding: 8px 16px; border: none; border-radius: 8px; font-size: 12px; font-weight: 500;
+    cursor: pointer; transition: all .2s; font-family: 'Noto Sans SC', sans-serif; white-space: nowrap;
+  }
+  .publish-btn.xhs-btn { background: #ff2442; color: #fff; }
+  .publish-btn.xhs-btn:hover { background: #e01f3a; transform: translateY(-1px); box-shadow: 0 3px 10px rgba(255,36,66,.3); }
+  .publish-btn.dy-btn { background: #010101; color: #fff; }
+  .publish-btn.dy-btn:hover { background: #333; transform: translateY(-1px); box-shadow: 0 3px 10px rgba(0,0,0,.3); }
+  .publish-btn:disabled { background: #ccc; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  /* 发布状态弹窗 */
+  .pub-modal-mask {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,.55);
+    z-index: 9999; align-items: center; justify-content: center;
+    backdrop-filter: blur(3px);
+  }
+  .pub-modal-mask.show { display: flex; }
+  .pub-modal {
+    background: #fff; border-radius: 16px; max-width: 480px; width: 90%;
+    overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,.25);
+    animation: popIn .3s cubic-bezier(.175,.885,.32,1.275);
+  }
+  @keyframes popIn { from{opacity:0;transform:scale(.9)} to{opacity:1;transform:scale(1)} }
+  .pub-modal-head {
+    padding: 20px 24px 16px;
+    background: linear-gradient(135deg, var(--ink), #2a2010);
+    color: #fff; display: flex; align-items: center; gap: 12px;
+  }
+  .pub-modal-head .modal-platform-icon { font-size: 28px; }
+  .pub-modal-head .modal-title { font-family: 'Noto Serif SC', serif; font-size: 16px; font-weight: 700; }
+  .pub-modal-head .modal-sub { font-size: 11px; color: rgba(255,255,255,.55); margin-top: 2px; }
+  .pub-modal-body { padding: 20px 24px; }
+  .pub-modal-steps { list-style: none; margin-bottom: 20px; }
+  .pub-modal-steps li {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 8px 0; border-bottom: 1px solid var(--paper2); font-size: 13px; color: var(--muted); line-height: 1.5;
+  }
+  .pub-modal-steps li:last-child { border-bottom: none; }
+  .pub-modal-steps li .ms-num {
+    width: 20px; height: 20px; border-radius: 50%; background: var(--gold); color: var(--ink);
+    font-size: 11px; font-weight: 700; flex-shrink: 0; display: flex; align-items: center; justify-content: center; margin-top: 1px;
+  }
+  .pub-modal-code {
+    background: var(--paper); border: 1px solid var(--border); border-radius: 8px;
+    padding: 12px 14px; font-family: monospace; font-size: 12px; color: #444;
+    line-height: 1.7; margin-bottom: 16px; white-space: pre-wrap; word-break: break-all;
+    max-height: 120px; overflow-y: auto;
+  }
+  .pub-modal-copy-btn {
+    width: 100%; padding: 10px; background: var(--ink); color: #fff; border: none;
+    border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer;
+    font-family: 'Noto Sans SC', sans-serif; letter-spacing: 1px; transition: background .2s;
+  }
+  .pub-modal-copy-btn:hover { background: #333; }
+  .pub-modal-footer { padding: 0 24px 20px; display: flex; gap: 8px; justify-content: flex-end; }
+  .pub-modal-cancel { padding: 8px 20px; border: 1px solid var(--border); border-radius: 8px; background: #fff; font-size: 13px; color: var(--muted); cursor: pointer; font-family: 'Noto Sans SC', sans-serif; transition: all .2s; }
+  .pub-modal-cancel:hover { border-color: var(--gold); color: var(--ink); }
+
+  /* 分发触发按钮（在结果操作栏中） */
+  .action-btn.distribute { background: linear-gradient(135deg, var(--red), var(--gold)); color: #fff; border: none; font-weight: 600; letter-spacing: 1px; }
+  .action-btn.distribute:hover { opacity: .9; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(192,57,43,.3); }
+</style>
+</head>
+<body>
+<div class="deco deco-1">创</div>
+<div class="deco deco-2">影</div>
+<div class="topbar"></div>
+
+<header>
+  <div class="logo">
+    <div class="logo-seal"><span>智</span></div>
+    <div class="logo-text">
+      <h1>智影文创</h1>
+      <p>ZHIYING · AI MARKETING PLATFORM</p>
+    </div>
+  </div>
+  <div class="header-badge">
+    <span class="badge active">Multi-Agent</span>
+    <span class="badge">v3.1 热点版</span>
+  </div>
+</header>
+
+<main>
+  <div class="hero">
+    <div class="hero-tag">智能营销内容自动化生成（热点版）</div>
+    <h2>一键生成 <em>热点营销内容</em><br>文案 · 图片 · 视频 · 数字人</h2>
+    <p>文案 Agent 先创作 → 专业 Prompt 自动注入 → 媒体 Agent 精准生成 → 结合全网热点引爆流量</p>
+  </div>
+
+  <div class="card">
+    <div class="mode-label">选择创作模式</div>
+    <div class="mode-tabs">
+      <div class="mode-tab selected" data-mode="text" onclick="selectMode('text',this)">
+        <span class="tab-icon">✍️</span>
+        <span class="tab-name">营销文案</span>
+        <span class="tab-desc">广告语 · 产品描述 · 推广文</span>
+      </div>
+      <div class="mode-tab" data-mode="image" onclick="selectMode('image',this)">
+        <span class="tab-icon">🎨</span>
+        <span class="tab-name">营销图片</span>
+        <span class="tab-desc">海报 · 产品图 · Banner</span>
+      </div>
+      <div class="mode-tab" data-mode="video" onclick="selectMode('video',this)">
+        <span class="tab-icon">🎬</span>
+        <span class="tab-name">营销视频</span>
+        <span class="tab-desc">短视频 · 广告片 · 宣传片</span>
+      </div>
+      <div class="mode-tab" data-mode="avatar" onclick="selectMode('avatar',this)">
+        <span class="tab-icon">🧑‍💼</span>
+        <span class="tab-name">数字人</span>
+        <span class="tab-desc">虚拟主播 · 口播 · 带货</span>
+      </div>
+      <!-- 新增热点创作Tab -->
+      <div class="mode-tab" data-mode="hotspot" onclick="selectMode('hotspot',this)">
+        <span class="tab-icon">🔥</span>
+        <span class="tab-name">热点创作</span>
+        <span class="tab-desc">结合热点生成内容</span>
+      </div>
+    </div>
+
+    <!-- 新增热点展示区域 -->
+    <div class="hotspot-section" id="hotspotSection">
+      <div class="hotspot-header">
+        <div class="hotspot-title">全网今日热点 TOP20 <span id="hotspotTime"></span></div>
+        <div class="refresh-hotspot" onclick="getTodayHotTop20()">🔄 刷新热点</div>
+      </div>
+      <div class="hotspot-list" id="hotspotList"></div>
+      <div style="font-size: 10px; color: var(--muted); margin-top: 8px;">提示：点击选中热点，可结合自定义描述生成内容</div>
+    </div>
+
+    <div class="input-label">输入创作描述（可结合选中的热点）</div>
+    <textarea id="promptInput" rows="4" placeholder="例：为一款高端护肤品创作五一节日促销内容，目标用户25-35岁女性，强调天然成分和限时折扣..."></textarea>
+
+    <div class="options-row" id="optionsRow"></div>
+
+    <button class="generate-btn" id="generateBtn" onclick="generate()">⬡ &nbsp;开始智能创作</button>
+
+    <!-- 步骤进度条（图片/视频/数字人时显示） -->
+    <div class="steps-bar" id="stepsBar">
+      <div class="steps-track" id="stepsTrack"></div>
+      <div class="step-status" id="stepStatus"></div>
+    </div>
+    <div class="loading-bar" id="loadingBar"></div>
+    <div class="error-box" id="errorBox"></div>
+
+    <!-- 多页结果区 -->
+    <div class="result-section" id="resultSection">
+      <div class="result-nav" id="resultNav"></div>
+      <div id="resultPages"></div>
+      <div class="result-actions-row" id="resultActions"></div>
+    </div>
+
+    <!-- 自动分发面板（嵌在卡片内） -->
+    <div class="distribute-panel" id="distributePanel">
+      <div class="distribute-header">
+        <div class="distribute-header-left">
+          <span class="distribute-header-icon">📡</span>
+          <div class="distribute-header-text">
+            <h3>自动分发中心</h3>
+            <p>ONE-CLICK CONTENT DISTRIBUTION</p>
+          </div>
+        </div>
+        <span class="distribute-close" onclick="closeDistribute()" title="关闭">✕</span>
+      </div>
+      <div class="distribute-body">
+        <div class="distribute-preview" id="distributePrev">
+          <div class="distribute-preview-media" id="distPrevMedia">
+            <span class="media-icon">📄</span>
+          </div>
+          <div class="distribute-preview-info">
+            <div class="pi-label">待发布内容预览</div>
+            <div class="pi-text" id="distPrevText">—</div>
+          </div>
+        </div>
+        <div class="platform-list">
+          <div class="platform-row">
+            <div class="platform-icon xhs">🍠</div>
+            <div class="platform-info">
+              <div class="pn">小红书</div>
+              <div class="pd">图文笔记 · 自动填充标题与正文</div>
+            </div>
+            <span class="platform-status ready">已接入</span>
+            <button class="publish-btn xhs-btn" onclick="openPublishModal('xhs')">一键发布</button>
+          </div>
+          <div class="platform-row">
+            <div class="platform-icon dy">🎵</div>
+            <div class="platform-info">
+              <div class="pn">抖音</div>
+              <div class="pd">图文 / 视频 · 自动上传与发布</div>
+            </div>
+            <span class="platform-status ready">已接入</span>
+            <button class="publish-btn dy-btn" onclick="openPublishModal('dy')">一键发布</button>
+          </div>
+        </div>
+        <div style="margin-top:14px;padding:10px 14px;background:rgba(200,168,75,.1);border-radius:8px;border-left:3px solid var(--gold);">
+          <div style="font-size:11px;color:var(--muted);line-height:1.7;letter-spacing:.5px;">
+            💡 <strong style="color:var(--ink)">使用说明：</strong>点击"一键发布"将展示执行指令，复制后在终端运行对应 Python 脚本即可完成自动发布。请确保已提前保存登录状态（<code style="background:var(--paper2);padding:1px 5px;border-radius:3px;font-size:10px;">auth.json</code>）。
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="history-section" id="historySection" style="display:none">
+    <div class="section-divider"><span>创作历史</span></div>
+    <div class="history-grid" id="historyGrid"></div>
+  </div>
+</main>
+
+
+<!-- 发布弹窗 -->
+<div class="pub-modal-mask" id="pubModalMask" onclick="closePubModal(event)">
+  <div class="pub-modal" id="pubModal">
+    <div class="pub-modal-head">
+      <span class="modal-platform-icon" id="modalIcon">🍠</span>
+      <div>
+        <div class="modal-title" id="modalTitle">发布到小红书</div>
+        <div class="modal-sub" id="modalSub">自动填充内容 · 模拟真人操作</div>
+      </div>
+    </div>
+    <div class="pub-modal-body">
+      <ol class="pub-modal-steps" id="modalSteps"></ol>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:8px;letter-spacing:1px;">📋 复制以下指令，在终端执行：</div>
+      <div class="pub-modal-code" id="modalCmd"></div>
+      <button class="pub-modal-copy-btn" onclick="copyCmd()">📋 复制指令到剪贴板</button>
+    </div>
+    <div class="pub-modal-footer">
+      <button class="pub-modal-cancel" onclick="closePubModal()">关闭</button>
+    </div>
+  </div>
+</div>
+
+<footer>智影文创 · 多Agent智能营销平台（热点版）· 版权所有</footer>
+
+<script>
+
+
+let currentMode = 'text';
+let history = [];
+// 当次生成的结果集
+let session = { copywriting: null, imageUrl: null, videoUrl: null };
+// 热点相关变量
+let hotList = [];
+let selectedHotspot = '';
+
+const modeOptions = {
+  text:   ['广告语','产品描述','社媒推广','节日促销','品牌故事','电商详情页'],
+  image:  ['产品海报','节日Banner','社媒封面','电商主图','品牌宣传'],
+  video:  ['15秒短视频','30秒广告','产品展示','品牌宣传片'],
+  avatar: ['虚拟主播','产品口播','带货解说','企业形象','教学讲解','节日祝福'],
+  hotspot: ['热点文案','热点海报','热点短视频','热点数字人口播'] // 热点创作的子选项
+};
+const modePlaceholders = {
+  text:   '例：为一款高端护肤品创作五一节日促销文案，目标用户25-35岁女性，强调天然成分和限时折扣...',
+  image:  '例：为一款精品咖啡生成营销图片，风格简洁现代，主色调深棕与米白，突出质感与温暖氛围...',
+  video:  '例：为一款新能源汽车生成30秒宣传视频，展示城市穿行场景，科技感强烈...',
+  avatar: '例：生成一位职业女性数字人主播，介绍新上市的智能手表，语气亲切自然，时长20秒...',
+  hotspot: '例：结合选中的热点，为品牌创作符合热点氛围的营销内容，突出品牌与热点的关联性...'
+};
+
+// 热点创作的步骤定义（复用原有逻辑，只是prompt增加热点）
+const STEPS = {
+  text:   [{ key:'copy', label:'文案创作' }],
+  image:  [{ key:'copy', label:'文案创作' }, { key:'prompt', label:'Prompt生成' }, { key:'image', label:'图片生成' }],
+  video:  [{ key:'copy', label:'文案创作' }, { key:'prompt', label:'Prompt生成' }, { key:'video', label:'视频生成' }],
+  avatar: [{ key:'copy', label:'文案创作' }, { key:'prompt', label:'Prompt生成' }, { key:'avatar', label:'数字人生成' }],
+  hotspot: [{ key:'copy', label:'热点文案创作' }, { key:'prompt', label:'Prompt生成' }, { key:'media', label:'内容生成' }]
+};
+
+// ── 热点爬取功能（JS版，替代Python代码）──
+async function getTodayHotTop20() {
+  const hotspotListEl = document.getElementById('hotspotList');
+  const hotspotTimeEl = document.getElementById('hotspotTime');
+
+  // 清空并显示加载状态
+  hotspotListEl.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--muted);">正在抓取热点...</div>';
+
+  // 获取当前时间
+  const currentTime = new Date().toLocaleString('zh-CN', {
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit'
+  });
+
+  try {
+    // 注意：直接前端请求知乎API会有跨域问题，此处建议搭建后端代理
+    // 临时解决方案：使用跨域代理（仅用于测试，生产环境需自建后端）
+    const proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent('https://api.zhihu.com/topstory/hot-lists/total?limit=20');
+    const response = await fetch(proxyUrl, {
+      method: 'GET',
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"
+      },
+      timeout: 10000
+    });
+
+    if (!response.ok) throw new Error(`HTTP错误：${response.status}`);
+
+    const proxyData = await response.json();
+    const data = JSON.parse(proxyData.contents);
+
+    hotList = [];
+    // 提取前20条热点
+    data.data.forEach((item, index) => {
+      const title = item.target?.title || '无标题';
+      const hotId = item.target?.id || '';
+      const link = hotId ? `https://www.zhihu.com/question/${hotId}` : '';
+
+      hotList.push({
+        排名: index + 1,
+        标题: title,
+        链接: link
+      });
+    });
+
+    // 渲染热点列表
+    hotspotListEl.innerHTML = hotList.map((hot, index) => `
+      <div class="hotspot-item" onclick="selectHotspot(${index})" id="hotspot-${index}">
+        <span class="hotspot-rank">${hot.排名}</span>
+        <span class="hotspot-title-text">${escapeHtml(hot.标题)}</span>
+      </div>
+    `).join('');
+
+    hotspotTimeEl.textContent = `(${currentTime})`;
+    console.log(`✅ ${currentTime} 今日热点TOP20抓取成功！`);
+  } catch (e) {
+    hotspotListEl.innerHTML = `<div style="text-align: center; padding: 20px; color: var(--red);">抓取失败：${e.message}</div>`;
+    console.error(`❌ 抓取失败：${e.message}`);
+  }
+}
+
+// 选择热点
+function selectHotspot(index) {
+  // 取消之前的选中状态
+  document.querySelectorAll('.hotspot-item').forEach(el => el.classList.remove('selected'));
+  // 选中当前热点
+  const selectedEl = document.getElementById(`hotspot-${index}`);
+  selectedEl.classList.add('selected');
+  selectedHotspot = hotList[index].标题;
+  // 提示用户
+  alert(`已选中热点：${selectedHotspot}\n可在创作描述中结合该热点生成内容`);
+}
+
+function selectMode(mode, el) {
+  currentMode = mode;
+  document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('promptInput').placeholder = modePlaceholders[mode];
+  renderOptions();
+  hideAll();
+
+  // 显示/隐藏热点区域
+  if (mode === 'hotspot') {
+    document.getElementById('hotspotSection').classList.add('show');
+    // 首次切换到热点标签时自动抓取热点
+    if (hotList.length === 0) {
+      getTodayHotTop20();
+    }
+  } else {
+    document.getElementById('hotspotSection').classList.remove('show');
+  }
+}
+
+function renderOptions() {
+  document.getElementById('optionsRow').innerHTML = modeOptions[currentMode]
+    .map(o => `<span class="option-chip" onclick="toggleChip(this)">${o}</span>`).join('');
+}
+
+function toggleChip(el) { el.classList.toggle('active'); }
+
+function getActiveChips() {
+  return [...document.querySelectorAll('.option-chip.active')].map(c => c.textContent).join('、');
+}
+
+function hideAll() {
+  document.getElementById('resultSection').classList.remove('show');
+  document.getElementById('errorBox').classList.remove('show');
+  document.getElementById('stepsBar').classList.remove('show');
+  document.getElementById('loadingBar').classList.remove('show');
+}
+
+function showError(msg) {
+  document.getElementById('errorBox').textContent = '⚠️ ' + msg;
+  document.getElementById('errorBox').classList.add('show');
+  document.getElementById('loadingBar').classList.remove('show');
+  document.getElementById('generateBtn').disabled = false;
+}
+
+// ── 步骤条管理 ──
+let stepState = {};
+function initSteps() {
+  const steps = STEPS[currentMode];
+  stepState = {};
+  steps.forEach(s => stepState[s.key] = 'pending');
+
+  const track = document.getElementById('stepsTrack');
+  track.innerHTML = steps.map(s => `
+    <div class="step-item" id="step-${s.key}">
+      <div class="step-dot" id="dot-${s.key}">○</div>
+      <div class="step-label">${s.label}</div>
+    </div>`).join('');
+  document.getElementById('stepStatus').textContent = '';
+  document.getElementById('stepsBar').classList.add('show');
+  document.getElementById('loadingBar').classList.add('show');
+}
+
+function setStep(key, state, msg) {
+  // state: active | done | error
+  stepState[key] = state;
+  const item = document.getElementById('step-' + key);
+  const dot  = document.getElementById('dot-' + key);
+  if (!item) return;
+  item.className = 'step-item ' + state;
+  dot.textContent = state === 'done' ? '✓' : state === 'error' ? '✕' : '●';
+  if (msg) document.getElementById('stepStatus').textContent = msg;
+}
+
+// ── 主调度 ──
+async function generate() {
+  const prompt = document.getElementById('promptInput').value.trim();
+  if (!prompt && currentMode === 'hotspot' && !selectedHotspot) {
+    alert('请先输入创作描述或选择热点！');
+    return;
+  }
+
+  // 拼接热点和用户输入
+  let fullPrompt = prompt;
+  if (currentMode === 'hotspot' && selectedHotspot) {
+    fullPrompt = `结合热点【${selectedHotspot}】，${prompt || '创作符合该热点氛围的营销内容'}`;
+  }
+
+  const chips = getActiveChips();
+  if (chips) {
+    fullPrompt += `（风格偏向：${chips}）`;
+  }
+
+  document.getElementById('generateBtn').disabled = true;
+  document.getElementById('errorBox').classList.remove('show');
+  document.getElementById('resultSection').classList.remove('show');
+  session = { copywriting: null, imageUrl: null, videoUrl: null };
+
+  if (currentMode === 'text') {
+    await runTextOnly(fullPrompt);
+  } else if (currentMode === 'hotspot') {
+    // 热点创作：根据子选项判断生成类型
+    const activeChip = getActiveChips();
+    initSteps();
+    if (activeChip.includes('文案')) {
+      await runHotspotText(fullPrompt);
+    } else if (activeChip.includes('海报')) {
+      await runHotspotImage(fullPrompt);
+    } else if (activeChip.includes('短视频')) {
+      await runHotspotVideo(fullPrompt);
+    } else if (activeChip.includes('口播')) {
+      await runHotspotAvatar(fullPrompt);
+    } else {
+      // 默认生成热点文案
+      await runHotspotText(fullPrompt);
+    }
+  } else {
+    initSteps();
+    if (currentMode === 'image')  await runImagePipeline(fullPrompt);
+    if (currentMode === 'video')  await runVideoPipeline(fullPrompt);
+    if (currentMode === 'avatar') await runAvatarPipeline(fullPrompt);
+  }
+  document.getElementById('generateBtn').disabled = false;
+}
+
+// ── 热点文案生成 ──
+async function runHotspotText(prompt) {
+  setStep('copy', 'active', '热点文案 Agent 正在创作...');
+  try {
+    const text = await callChatAPI(
+      '你是一位专业的热点营销文案专家，擅长结合全网热点创作吸引人的中文营销内容。请根据用户需求和热点，生成高质量、有创意的营销文案，包含标题、正文和行动号召语，突出热点关联性。',
+      prompt
+    );
+    session.copywriting = text;
+    setStep('copy', 'done', '热点文案创作完成 ✓');
+    addHistory('热点文案', prompt);
+    renderTextOnlyResult(text);
+  } catch(e) {
+    setStep('copy','error','热点文案生成失败');
+    showError('热点文案生成失败：' + e.message);
+  }
+  document.getElementById('loadingBar').classList.remove('show');
+}
+
+// ── 热点图片生成 ──
+async function runHotspotImage(prompt) {
+  // Step1: 热点文案创作
+  setStep('copy', 'active', '热点文案 Agent 正在创作...');
+  let copywriting;
+  try {
+    copywriting = await callChatAPI(
+      '你是一位专业的热点营销文案专家。请根据用户需求和热点，生成一段简洁有力的中文营销文案（100-200字），包含核心卖点、热点关联和情感共鸣。',
+      prompt
+    );
+    session.copywriting = copywriting;
+    setStep('copy', 'done', '热点文案创作完成 ✓');
+  } catch(e) {
+    setStep('copy','error','热点文案生成失败');
+    showError('热点文案生成失败：'+e.message);
+    return;
+  }
+
+  // Step2: 生成图片 Prompt
+  setStep('prompt', 'active', 'Prompt Agent 正在转化为图片描述...');
+  let imgPrompt;
+  try {
+    imgPrompt = await callChatAPI(
+      '你是一位专业的AI图片提示词工程师。请根据热点营销文案内容，生成一段适合AI图片生成的英文提示词（Prompt），要求：画面感强、风格明确、细节丰富，结合热点元素，60-120词以内，只输出提示词本身。',
+      `营销文案：${copywriting}\n原始需求：${prompt}`
+    );
+    setStep('prompt', 'done', 'Prompt 生成完成 ✓');
+  } catch(e) {
+    setStep('prompt','error','Prompt生成失败');
+    showError('Prompt生成失败：'+e.message);
+    return;
+  }
+
+  // Step3: 图片生成
+  setStep('media', 'active', '图片 Agent 正在绘制，预计15-30秒...');
+  try {
+    const imageUrl = await callImageAPI(imgPrompt);
+    session.imageUrl = imageUrl;
+    setStep('media', 'done', '热点图片生成完成 ✓');
+    addHistory('热点图片', prompt);
+    renderMediaResult('image', copywriting, imgPrompt, imageUrl);
+  } catch(e) {
+    setStep('media','error','热点图片生成失败');
+    showError('热点图片生成失败：'+e.message);
+  }
+  document.getElementById('loadingBar').classList.remove('show');
+}
+
+// ── 热点视频生成 ──
+async function runHotspotVideo(prompt) {
+  // Step1: 热点文案创作
+  setStep('copy', 'active', '热点文案 Agent 正在创作...');
+  let copywriting;
+  try {
+    copywriting = await callChatAPI(
+      '你是一位专业的热点营销文案专家。请根据用户需求和热点，生成一段简洁有力的中文营销视频文案（80-150字），包含场景描述、热点关联、情感共鸣和行动号召。',
+      prompt
+    );
+    session.copywriting = copywriting;
+    setStep('copy', 'done', '热点文案创作完成 ✓');
+  } catch(e) {
+    setStep('copy','error','热点文案生成失败');
+    showError('热点文案生成失败：'+e.message);
+    return;
+  }
+
+  // Step2: 生成视频 Prompt
+  setStep('prompt', 'active', 'Prompt Agent 正在转化为视频描述...');
+  let videoPrompt;
+  try {
+    videoPrompt = await callChatAPI(
+      '你是一位专业的AI视频提示词工程师。请根据热点营销文案，生成适合AI视频生成的中英文混合提示词，要求：镜头语言清晰、场景描述具体、结合热点元素、情绪氛围明确，80词以内，只输出提示词，不要解释。',
+      `营销文案：${copywriting}\n原始需求：${prompt}`
+    );
+    setStep('prompt', 'done', 'Prompt 生成完成 ✓');
+  } catch(e) {
+    setStep('prompt','error','Prompt生成失败');
+    showError('Prompt生成失败：'+e.message);
+    return;
+  }
+
+  // Step3: 视频生成
+  setStep('media', 'active', '视频 Agent 正在生成，预计1-3分钟...');
+  try {
+    const videoUrl = await callArkVideoAPI(videoPrompt);
+    session.videoUrl = videoUrl;
+    setStep('media', 'done', '热点视频生成完成 ✓');
+    addHistory('热点视频', prompt);
+    renderMediaResult('video', copywriting, videoPrompt, videoUrl);
+  } catch(e) {
+    setStep('media','error','热点视频生成失败');
+    showError('热点视频生成失败：'+e.message);
+  }
+  document.getElementById('loadingBar').classList.remove('show');
+}
+
+// ── 热点数字人生成 ──
+async function runHotspotAvatar(prompt) {
+  // Step1: 热点口播文案创作
+  setStep('copy', 'active', '热点口播文案 Agent 正在创作...');
+  let copywriting;
+  try {
+    copywriting = await callChatAPI(
+      '你是一位专业的热点短视频口播文案专家。请根据用户需求和热点，生成一段适合数字人播报的中文口播文案（60-120字），语气自然亲切，节奏感强，结合热点元素，包含开场、核心卖点、结尾引导。',
+      prompt
+    );
+    session.copywriting = copywriting;
+    setStep('copy', 'done', '热点口播文案创作完成 ✓');
+  } catch(e) {
+    setStep('copy','error','热点文案生成失败');
+    showError('热点文案生成失败：'+e.message);
+    return;
+  }
+
+  // Step2: 生成数字人 Prompt
+  setStep('prompt', 'active', 'Prompt Agent 正在生成数字人场景描述...');
+  let avatarPrompt;
+  try {
+    avatarPrompt = await callChatAPI(
+      '你是一位AI数字人视频提示词工程师。请根据热点口播文案，生成适合AI数字人视频生成的场景提示词，要求：人物形象描述具体、背景场景结合热点元素、情绪表情自然，60词以内，只输出提示词。',
+      `口播文案：${copywriting}\n原始需求：${prompt}`
+    );
+    setStep('prompt', 'done', 'Prompt 生成完成 ✓');
+  } catch(e) {
+    setStep('prompt','error','Prompt生成失败');
+    showError('Prompt生成失败：'+e.message);
+    return;
+  }
+
+  // Step3: 数字人生成
+  setStep('media', 'active', '数字人 Agent 正在生成，预计1-3分钟...');
+  try {
+    const videoUrl = await callArkVideoAPI(avatarPrompt);
+    session.videoUrl = videoUrl;
+    setStep('media', 'done', '热点数字人生成完成 ✓');
+    addHistory('热点数字人', prompt);
+    renderMediaResult('avatar', copywriting, avatarPrompt, videoUrl);
+  } catch(e) {
+    setStep('media','error','热点数字人生成失败');
+    showError('热点数字人生成失败：'+e.message);
+  }
+  document.getElementById('loadingBar').classList.remove('show');
+}
+
+// ── 纯文案 ──
+async function runTextOnly(prompt) {
+  document.getElementById('loadingBar').classList.add('show');
+  try {
+    const text = await callChatAPI(
+      '你是一位专业的营销文案专家，擅长创作吸引人的中文营销内容。请根据用户需求，生成高质量、有创意的营销文案，包含标题、正文和行动号召语。',
+      prompt
+    );
+    session.copywriting = text;
+    addHistory('文案', prompt);
+    renderTextOnlyResult(text);
+  } catch(e) {
+    showError('文案生成失败：' + e.message);
+  }
+  document.getElementById('loadingBar').classList.remove('show');
+}
+
+// ── 图片流水线 ──
+async function runImagePipeline(userPrompt) {
+  // Step1: 文生文
+  setStep('copy', 'active', '文案 Agent 正在创作营销文案...');
+  let copywriting;
+  try {
+    copywriting = await callChatAPI(
+      '你是一位专业的营销文案专家。请根据用户需求，生成一段简洁有力的中文营销文案（100-200字），包含核心卖点和情感共鸣。',
+      userPrompt
+    );
+    session.copywriting = copywriting;
+    setStep('copy', 'done', '文案创作完成 ✓');
+  } catch(e) { setStep('copy','error','文案生成失败'); showError('文案生成失败：'+e.message); return; }
+
+  // Step2: 生成图片 Prompt
+  setStep('prompt', 'active', 'Prompt Agent 正在将文案转化为图片描述...');
+  let imgPrompt;
+  try {
+    imgPrompt = await callChatAPI(
+      '你是一位专业的AI图片提示词工程师。请根据营销文案内容，生成一段适合AI图片生成的英文提示词（Prompt），要求：画面感强、风格明确、细节丰富，60-120词以内，不要包含任何解释说明，只输出提示词本身。',
+      `营销文案：${copywriting}\n原始需求：${userPrompt}`
+    );
+    setStep('prompt', 'done', 'Prompt 生成完成 ✓');
+  } catch(e) { setStep('prompt','error','Prompt生成失败'); showError('Prompt生成失败：'+e.message); return; }
+
+  // Step3: 图片生成
+  setStep('image', 'active', '图片 Agent 正在绘制，预计15-30秒...');
+  try {
+    const imageUrl = await callImageAPI(imgPrompt);
+    session.imageUrl = imageUrl;
+    setStep('image', 'done', '图片生成完成 ✓');
+    addHistory('图片', userPrompt);
+    renderMediaResult('image', copywriting, imgPrompt, imageUrl);
+  } catch(e) { setStep('image','error','图片生成失败'); showError('图片生成失败：'+e.message); }
+}
+
+// ── 视频流水线 ──
+async function runVideoPipeline(userPrompt) {
+  setStep('copy', 'active', '文案 Agent 正在创作营销文案...');
+  let copywriting;
+  try {
+    copywriting = await callChatAPI(
+      '你是一位专业的营销文案专家。请根据用户需求，生成一段简洁有力的中文营销视频文案（80-150字），包含场景描述、情感共鸣和行动号召。',
+      userPrompt
+    );
+    session.copywriting = copywriting;
+    setStep('copy', 'done', '文案创作完成 ✓');
+  } catch(e) { setStep('copy','error','文案生成失败'); showError('文案生成失败：'+e.message); return; }
+
+  setStep('prompt', 'active', 'Prompt Agent 正在将文案转化为视频描述...');
+  let videoPrompt;
+  try {
+    videoPrompt = await callChatAPI(
+      '你是一位专业的AI视频提示词工程师。请根据营销文案，生成适合AI视频生成的中英文混合提示词，要求：镜头语言清晰、场景描述具体、情绪氛围明确，80词以内，只输出提示词，不要解释。',
+      `营销文案：${copywriting}\n原始需求：${userPrompt}`
+    );
+    setStep('prompt', 'done', 'Prompt 生成完成 ✓');
+  } catch(e) { setStep('prompt','error','Prompt生成失败'); showError('Prompt生成失败：'+e.message); return; }
+
+  setStep('video', 'active', '视频 Agent 正在生成，预计1-3分钟...');
+  try {
+    const videoUrl = await callArkVideoAPI(videoPrompt);
+    session.videoUrl = videoUrl;
+    setStep('video', 'done', '视频生成完成 ✓');
+    addHistory('视频', userPrompt);
+    renderMediaResult('video', copywriting, videoPrompt, videoUrl);
+  } catch(e) { setStep('video','error','视频生成失败'); showError('视频生成失败：'+e.message); }
+}
+
+// ── 数字人流水线 ──
+async function runAvatarPipeline(userPrompt) {
+  setStep('copy', 'active', '文案 Agent 正在创作口播文案...');
+  let copywriting;
+  try {
+    copywriting = await callChatAPI(
+      '你是一位专业的短视频口播文案专家。请根据用户需求，生成一段适合数字人播报的中文口播文案（60-120字），语气自然亲切，节奏感强，包含开场、核心卖点、结尾引导。',
+      userPrompt
+    );
+    session.copywriting = copywriting;
+    setStep('copy', 'done', '口播文案创作完成 ✓');
+  } catch(e) { setStep('copy','error','文案生成失败'); showError('文案生成失败：'+e.message); return; }
+
+  setStep('prompt', 'active', 'Prompt Agent 正在生成数字人场景描述...');
+  let avatarPrompt;
+  try {
+    avatarPrompt = await callChatAPI(
+      '你是一位AI数字人视频提示词工程师。请根据口播文案，生成适合AI数字人视频生成的场景提示词，要求：人物形象描述具体、背景场景清晰、情绪表情自然，60词以内，只输出提示词。',
+      `口播文案：${copywriting}\n原始需求：${userPrompt}`
+    );
+    setStep('prompt', 'done', 'Prompt 生成完成 ✓');
+  } catch(e) { setStep('prompt','error','Prompt生成失败'); showError('Prompt生成失败：'+e.message); return; }
+
+  setStep('avatar', 'active', '数字人 Agent 正在生成，预计1-3分钟...');
+  try {
+    const videoUrl = await callArkVideoAPI(avatarPrompt);
+    session.videoUrl = videoUrl;
+    setStep('avatar', 'done', '数字人生成完成 ✓');
+    addHistory('数字人', userPrompt);
+    renderMediaResult('avatar', copywriting, avatarPrompt, videoUrl);
+  } catch(e) { setStep('avatar','error','数字人生成失败'); showError('数字人生成失败：'+e.message); }
+}
+
+// ── API 封装 ──
+async function callChatAPI(systemPrompt, userContent) {
+  const res = await fetch(`${BASE_URL}/chat/completions`, {
+    method: 'POST',
+    headers: { 'Content-Type':'application/json', 'Authorization':`Bearer ${API_KEY}` },
+    body: JSON.stringify({
+      model: 'gpt-4o-mini',
+      messages: [
+        { role:'system', content: systemPrompt },
+        { role:'user',   content: userContent }
+      ],
+      max_tokens: 1000
+    })
+  });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message);
+  return data.choices[0].message.content;
+}
+
+async function callImageAPI(prompt) {
+  const res = await fetch(`${BASE_URL}/chat/completions`, {
+    method: 'POST',
+    headers: { 'Content-Type':'application/json', 'Authorization':`Bearer ${API_KEY}` },
+    body: JSON.stringify({
+      model: 'gemini-3.1-flash-image-preview',
+      messages: [{ role:'user', content: prompt }],
+      extra_body: { modalities:['text','image'] }
+    })
+  });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message);
+  const content = data.choices[0].message.content;
+  let imgB64 = null;
+  if (typeof content === 'string' && content.includes('base64,')) {
+    imgB64 = content.split('base64,')[1].replace(/[^A-Za-z0-9+/=]/g,'');
+  } else if (Array.isArray(content)) {
+    for (const part of content) {
+      if (part.type === 'image_url' && part.image_url?.url?.includes('base64,')) {
+        imgB64 = part.image_url.url.split('base64,')[1]; break;
+      }
+    }
+  }
+  if (!imgB64) throw new Error('未返回图片数据');
+  return 'data:image/jpeg;base64,' + imgB64;
+}
+
+async function callArkVideoAPI(prompt) {
+  const createRes = await fetch(`${ARK_BASE}/contents/generations/tasks`, {
+    method: 'POST',
+    headers: { 'Content-Type':'application/json', 'Authorization':`Bearer ${ARK_KEY}` },
+    body: JSON.stringify({
+      model: 'doubao-seedance-1-0-pro-fast-251015',
+      content: [{ type:'text', text: prompt + ' --resolution 1080p --duration 5 --camerafixed false --watermark false' }]
+    })
+  });
+  if (!createRes.ok) throw new Error(`提交失败 HTTP ${createRes.status}`);
+  const createData = await createRes.json();
+  if (createData.error) throw new Error(createData.error.message || JSON.stringify(createData.error));
+  const taskId = createData.id;
+  if (!taskId) throw new Error('未获取到任务ID');
+
+  document.getElementById('stepStatus').textContent = `任务已提交（${taskId.slice(0,8)}...），正在生成...`;
+
+  for (let i = 0; i < 60; i++) {
+    await new Promise(r => setTimeout(r, 5000));
+    const pollRes = await fetch(`${ARK_BASE}/contents/generations/tasks/${taskId}`, {
+      headers: { 'Authorization':`Bearer ${ARK_KEY}` }
+    });
+    if (!pollRes.ok) throw new Error(`轮询失败 HTTP ${pollRes.status}`);
+    const p = await pollRes.json();
+    if (p.error) throw new Error(p.error.message || JSON.stringify(p.error));
+    const status = p.status;
+    document.getElementById('stepStatus').textContent = `状态：${status}，已等待 ${(i+1)*5} 秒...`;
+    if (status === 'succeeded') {
+      const url = (p.content && p.content.video_url) || (p.outputs && p.outputs[0] && p.outputs[0].url);
+      if (!url) throw new Error('未获取到视频地址');
+      return url;
+    }
+    if (status === 'failed') throw new Error('视频生成任务失败');
+  }
+  throw new Error('生成超时（5分钟），请稍后重试');
+}
+
+// ── 渲染结果（多页） ──
+function renderTextOnlyResult(text) {
+  const nav   = document.getElementById('resultNav');
+  const pages = document.getElementById('resultPages');
+  const acts  = document.getElementById('resultActions');
+
+  nav.innerHTML = `<div class="result-tab active" onclick="switchTab('page-copy',this)">📝 营销文案</div>`;
+  pages.innerHTML = `
+    <div class="result-page active" id="page-copy">
+      <div class="text-result">${escapeHtml(text)}</div>
+    </div>`;
+  acts.innerHTML = `
+    <button class="action-btn" onclick="generate()">重新生成</button>
+    <button class="action-btn primary" onclick="downloadText('${encodeURIComponent(text)}')">下载文案</button>
+    <button class="action-btn distribute" onclick="openDistribute()">📡 一键分发</button>`;
+
+  document.getElementById('loadingBar').classList.remove('show');
+  document.getElementById('resultSection').classList.add('show');
+}
+
+function renderMediaResult(type, copywriting, usedPrompt, mediaUrl) {
+  const nav   = document.getElementById('resultNav');
+  const pages = document.getElementById('resultPages');
+  const acts  = document.getElementById('resultActions');
+
+  const isVideo = (type === 'video' || type === 'avatar');
+  const mediaLabel = type === 'image' ? '🖼️ 营销图片' : type === 'video' ? '🎬 营销视频' : '🧑‍💼 数字人';
+
+  const mediaHtml = isVideo
+    ? `<div class="video-result"><video controls autoplay muted src="${mediaUrl}"></video></div>`
+    : `<div class="image-result"><img src="${mediaUrl}" alt="生成图片"/></div>`;
+
+  nav.innerHTML = `
+    <div class="result-tab active" onclick="switchTab('page-copy',this)">📝 文案</div>
+    <div class="result-tab" onclick="switchTab('page-prompt',this)">🔧 Prompt</div>
+    <div class="result-tab" onclick="switchTab('page-media',this)">${mediaLabel}</div>
+    <div class="result-tab" onclick="switchTab('page-all',this)">📋 全览</div>`;
+
+  pages.innerHTML = `
+    <div class="result-page active" id="page-copy">
+      <div class="text-result">${escapeHtml(copywriting)}</div>
+    </div>
+    <div class="result-page" id="page-prompt">
+      <div class="text-result" style="font-family:var(--font-mono,monospace);font-size:13px;color:#555;">${escapeHtml(usedPrompt)}</div>
+    </div>
+    <div class="result-page" id="page-media">
+      ${mediaHtml}
+    </div>
+    <div class="result-page" id="page-all">
+      <div class="media-layout">
+        <div class="media-panel">
+          <div class="media-panel-header"><span class="dot"></span>营销文案</div>
+          <div class="media-panel-body"><div class="text-result">${escapeHtml(copywriting)}</div></div>
+        </div>
+        <div class="media-panel">
+          <div class="media-panel-header"><span class="dot"></span>${mediaLabel.replace(/^../,'')}</div>
+          <div class="media-panel-body">${mediaHtml}</div>
+        </div>
+      </div>
+      <div style="margin-top:14px;">
+        <div class="media-panel-header" style="border:1px solid var(--border);border-radius:8px 8px 0 0;"><span class="dot"></span>使用的 Prompt</div>
+        <div style="background:var(--paper);border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;padding:14px 16px;font-size:12px;color:var(--muted);line-height:1.7;">${escapeHtml(usedPrompt)}</div>
+      </div>
+    </div>`;
+
+  const dlBtn = isVideo
+    ? `<button class="action-btn primary" onclick="window.open('${mediaUrl}','_blank')">打开视频</button>`
+    : `<button class="action-btn primary" onclick="downloadImg('${mediaUrl}')">下载图片</button>`;
+
+  acts.innerHTML = `
+    <button class="action-btn" onclick="generate()">重新生成</button>
+    <button class="action-btn" onclick="downloadText('${encodeURIComponent(copywriting)}')">下载文案</button>
+    ${dlBtn}
+    <button class="action-btn distribute" onclick="openDistribute()">📡 一键分发</button>`;
+
+  document.getElementById('loadingBar').classList.remove('show');
+  document.getElementById('resultSection').classList.add('show');
+  // 默认切到全览
+  switchTab('page-all', document.querySelector('.result-tab:last-child'));
+}
+
+function switchTab(pageId, tabEl) {
+  document.querySelectorAll('.result-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.result-page').forEach(p => p.classList.remove('active'));
+  if (tabEl) tabEl.classList.add('active');
+  const pg = document.getElementById(pageId);
+  if (pg) pg.classList.add('active');
+}
+
+// ── 下载 ──
+function downloadText(encoded) {
+  const text = decodeURIComponent(encoded);
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text],{type:'text/plain;charset=utf-8'}));
+  a.download = '营销文案_' + Date.now() + '.txt'; a.click();
+}
+function downloadImg(src) {
+  const a = document.createElement('a'); a.href = src;
+  a.download = '营销图片_' + Date.now() + '.jpg'; a.click();
+}
+
+// ── 历史 ──
+function addHistory(type, prompt) {
+  history.unshift({ type, prompt, time: new Date().toLocaleTimeString() });
+  if (history.length > 8) history.pop();
+  renderHistory();
+}
+function renderHistory() {
+  const sec = document.getElementById('historySection');
+  const grid = document.getElementById('historyGrid');
+  if (!history.length) { sec.style.display='none'; return; }
+  sec.style.display='block';
+  grid.innerHTML = history.map((h,i) => `
+    <div class="history-item" onclick="reloadHistory(${i})">
+      <div class="h-type">${h.type}</div>
+      <div class="h-prompt">${escapeHtml(h.prompt)}</div>
+      <div class="h-time">${h.time}</div>
+    </div>`).join('');
+}
+function reloadHistory(i) {
+  document.getElementById('promptInput').value = history[i].prompt;
+}
+function escapeHtml(s) {
+  if (!s) return '';
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+}
+
+// ── 自动分发模块 ──
+
+function openDistribute() {
+  const panel = document.getElementById('distributePanel');
+  const prevText = document.getElementById('distPrevText');
+  const prevMedia = document.getElementById('distPrevMedia');
+
+  // 填充内容预览
+  const copy = session.copywriting || '';
+  prevText.textContent = copy ? copy.slice(0, 120) + (copy.length > 120 ? '...' : '') : '（暂无文案）';
+
+  // 媒体预览
+  if (session.imageUrl) {
+    prevMedia.innerHTML = `<img src="${session.imageUrl}" alt="预览图"/>`;
+  } else if (session.videoUrl) {
+    prevMedia.innerHTML = `<video src="${session.videoUrl}" muted></video>`;
+  } else {
+    prevMedia.innerHTML = `<span class="media-icon">📝</span>`;
+  }
+
+  panel.classList.add('show');
+  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function closeDistribute() {
+  document.getElementById('distributePanel').classList.remove('show');
+}
+
+let currentModalCmd = '';
+
+function openPublishModal(platform) {
+  const copy = session.copywriting || '（暂无文案，请先生成内容）';
+  const mask = document.getElementById('pubModalMask');
+  const icon = document.getElementById('modalIcon');
+  const title = document.getElementById('modalTitle');
+  const sub = document.getElementById('modalSub');
+  const steps = document.getElementById('modalSteps');
+  const cmd = document.getElementById('modalCmd');
+
+  // 提取标题：取文案第一行（最多30字）
+  const firstLine = copy.split('\n').find(l => l.trim()) || copy;
+  const titleStr = firstLine.replace(/^[#\*\s]+/, '').slice(0, 30);
+
+  if (platform === 'xhs') {
+    icon.textContent = '🍠';
+    title.textContent = '发布到小红书';
+    sub.textContent = '自动图文发布 · 模拟真人操作';
+    steps.innerHTML = `
+      <li><span class="ms-num">1</span>确保已运行 <code style="background:var(--paper2);padding:1px 5px;border-radius:3px;">python save_xhs_auth.py</code> 并完成扫码登录，生成 auth.json</li>
+      <li><span class="ms-num">2</span>将生成的图片保存为 <code style="background:var(--paper2);padding:1px 5px;border-radius:3px;">output.jpg</code>（系统将自动下载到项目目录）</li>
+      <li><span class="ms-num">3</span>复制下方指令在终端执行，脚本将自动打开浏览器完成发布</li>`;
+    const escapedTitle = titleStr.replace(/'/g, "\\'");
+    const escapedBody = copy.slice(0, 400).replace(/'/g, "\\'").replace(/\n/g, '\\n');
+    currentModalCmd = `# 自动发布到小红书\npython publish_xhs.py\n\n# 或直接传入参数（如你的脚本支持）：\n# TITLE='${escapedTitle}'\n# BODY='${escapedBody.slice(0,100)}...'`;
+  } else {
+    icon.textContent = '🎵';
+    title.textContent = '发布到抖音';
+    sub.textContent = '自动图文/视频发布 · 模拟真人操作';
+    steps.innerHTML = `
+      <li><span class="ms-num">1</span>确保已运行 <code style="background:var(--paper2);padding:1px 5px;border-radius:3px;">python save_dy_auth.py</code> 并完成扫码登录</li>
+      <li><span class="ms-num">2</span>如需发布视频，确保视频文件已下载至项目目录</li>
+      <li><span class="ms-num">3</span>复制下方指令在终端执行，main.py 将引导你选择要发布的内容</li>`;
+    currentModalCmd = `# 自动发布到抖音\npython main.py\n\n# 运行后按提示选择要发布的内容 ID\n# 输入 'all' 发布全部，或输入具体 ID（如：1,2,3）`;
+  }
+
+  cmd.textContent = currentModalCmd;
+  mask.classList.add('show');
+}
+
+function closePubModal(e) {
+  if (e && e.target !== document.getElementById('pubModalMask')) return;
+  document.getElementById('pubModalMask').classList.remove('show');
+}
+
+function copyCmd() {
+  navigator.clipboard.writeText(currentModalCmd).then(() => {
+    const btn = document.querySelector('.pub-modal-copy-btn');
+    const orig = btn.textContent;
+    btn.textContent = '✅ 已复制！';
+    btn.style.background = '#388e3c';
+    setTimeout(() => { btn.textContent = orig; btn.style.background = ''; }, 2000);
+  }).catch(() => {
+    // 降级方案
+    const ta = document.createElement('textarea');
+    ta.value = currentModalCmd;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    const btn = document.querySelector('.pub-modal-copy-btn');
+    btn.textContent = '✅ 已复制！';
+    setTimeout(() => { btn.textContent = '📋 复制指令到剪贴板'; }, 2000);
+  });
+}
+
+// 初始化
+renderOptions();
+</script>
+</body>
+</html>
